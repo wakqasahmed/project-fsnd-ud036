@@ -18,10 +18,8 @@ favorite_movies_imdb_id = ['tt1375666', 'tt0133093', 'tt0482571', 'tt0167404',
                            'tt0111161', 'tt0468569', 'tt4154756']
 
 
-""" This method calls OMDB API to get the movie data (as found in IMDB) """
-
-
 def get_movie_data_omdb(imdb_id):
+    """ This method calls OMDB API to get the movie data (as found in IMDB) """
     omdb_params = urllib.parse.urlencode(
         {'i': imdb_id, 'apikey': omdb_api_key})
     # connection = urllib.request.urlopen(
@@ -33,11 +31,9 @@ def get_movie_data_omdb(imdb_id):
     return result
 
 
-""" This method calls TMDB API to get the movie data mainly TMDB ID for getting
-trailer (as found in themoviedb.org) """
-
-
 def get_movie_data_tmdb(imdb_id):
+    """ This method calls TMDB API to get the movie data mainly TMDB ID for getting
+trailer (as found in themoviedb.org) """
     tmdb_params = urllib.parse.urlencode(
         {'external_source': 'imdb_id', 'language': 'en-US',
          'api_key': tmdb_api_key})
@@ -51,11 +47,9 @@ def get_movie_data_tmdb(imdb_id):
     return result
 
 
-""" This method calls TMDB Video API to get the
-movie trailer (as found in themoviedb.org) """
-
-
 def get_movie_video_tmdb(tmdb_id):
+    """ This method calls TMDB Video API to get the
+movie trailer (as found in themoviedb.org) """
     tmdb_params = urllib.parse.urlencode(
         {'language': 'en-US', 'api_key': tmdb_api_key})
     # connection = urllib.request.urlopen(
@@ -79,19 +73,33 @@ def generate_movie_list():
 
     for fav_imdb_id in favorite_movies_imdb_id:
 
-        # Calling OMDB API to get details of the movie (as found in IMDB)
-        omdb_data = get_movie_data_omdb(fav_imdb_id)
+        try:
+            # Calling OMDB API to get details of the movie (as found in IMDB)
+            omdb_data = get_movie_data_omdb(fav_imdb_id)
+            print(omdb_data)
+        except TimeoutError:
+            print('Timeout Error fetching movie data from OMDB API')
+        except:
+            print('Unexpected Error fetching movie data from OMDB API')
 
-        print(omdb_data)
+        try:
+            """ Calling TMDB API to get tmdb_id and details of the movie
+            (as found in TMDB) """
+            tmdb_data = get_movie_data_tmdb(fav_imdb_id)
+            print(tmdb_data)
+        except TimeoutError:
+            print('Timeout Error fetching movie data from TMDB API')
+        except:
+            print('Unexpected Error fetching movie data from TMDB API')
 
-        """ Calling TMDB API to get tmdb_id and details of the movie
-        (as found in TMDB) """
-        tmdb_data = get_movie_data_tmdb(fav_imdb_id)
-
-        print(tmdb_data)
-
-        # Calling TMDB Video API to get the trailer of the movie
-        video = get_movie_video_tmdb(str(tmdb_data['movie_results'][0]['id']))
+        try:
+            # Calling TMDB Video API to get the trailer of the movie
+            tmdb_id = str(tmdb_data['movie_results'][0]['id'])
+            video = get_movie_video_tmdb(tmdb_id)
+        except TimeoutError:
+            print('Timeout Error fetching movie trailer from TMDB API')
+        except:
+            print('Unexpected Error fetching movie trailer from TMDB API')
 
         """ Looping over videos of the movie
         and Assigning the appropriate trailer """
